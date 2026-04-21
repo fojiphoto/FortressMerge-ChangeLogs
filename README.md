@@ -34,13 +34,33 @@ Last updated: April 2026
 
 ---
 
-## PHASE 3 — Pley Platform Integration
-### Branch: `Pley_FirebaseSDK-Test-March26` | March 2026
+## PHASE 3 — Pley Platform Integration (3 Weeks of R&D)
+### Branch: `Pley_FirebaseSDK-Test-March26` | February – March 2026
 
-> Goal: Adapt the WebGL build for the Pley platform — integrate Firebase SDK, resolve Google Sign-in, validate data persistence.
+> Goal: Enable mobile players (Android/iOS) to sync their existing game save data to the Pley web build using a cloud-backed identity system — so a player's progress follows them across platforms.
 
-- **Mar 12** — Clean build produced for Pley platform submission
-- **Mar 24** — Google Sign-in flow and cloud data retrieval fully resolved for Pley
+### Week 1 — Pley SDK Investigation (Feb 04 – ~Feb 11)
+- **Feb 04** — Started Pley platform integration immediately after the base WebGL build was stable
+- Integrated the Pley SDK and began reading through their documentation for data persistence support
+- Discovered the Pley SDK documentation was incomplete and unclear regarding Firestore usage — no official working example was provided for game save sync
+- Opened support tickets with the Pley team; responses were slow and did not address the Firestore-specific questions
+- Identified the core requirement: players on Android/iOS have existing save data (coins, level, heroes, perks) — the web build must load that same data so they do not start from scratch
+
+### Week 2 — Firebase + Firestore External Testing (~Feb 11 – ~Feb 20)
+- Pivoted away from the Pley SDK approach and began integrating Firebase + Firestore directly into the WebGL build as an independent data layer
+- Implemented Firestore read/write for game save data — player profile, level progress, currency, unlocks
+- Hosted test builds externally on GitHub Pages to run end-to-end data sync validation outside of the Pley environment
+- Confirmed Firestore sync was working correctly in isolation — data written from a mobile build was readable by the web build
+- Hit a platform blocker: Pley loads the game inside an **iframe**, and their internal authentication plugin does not properly support **Google ID Sign-in** or **Firestore** — only standard Firebase Analytics and crash logging are supported inside the iframe context
+- Google Sign-in OAuth redirects are blocked by the iframe sandbox, making the standard Firebase Auth flow non-functional on Pley
+
+### Week 3 — Pley Team Collaboration & Final Solution (~Feb 20 – Mar 12)
+- Escalated the iframe/auth issue directly to the Pley engineering team and entered a collaborative debugging phase
+- Shared build logs, iframe console errors, and OAuth failure traces with Pley support over multiple sessions
+- Pley team investigated their internal plugin limitations and confirmed that standard Google Sign-in cannot be used inside their iframe environment
+- **Mar 12** — Pley team provided an official solution: use an **external token-based authentication flow** — the game requests an auth token from outside the iframe, passes it into the game context, and uses that token to authenticate the Google ID and load the player's Firestore data
+- Clean build produced implementing this external token approach and submitted to Pley for review
+- **Mar 24** — External token Google Sign-in auth and Firestore data retrieval fully validated — player data syncs correctly from mobile to web on the Pley platform
 
 ---
 
@@ -128,7 +148,7 @@ Last updated: April 2026
 |----------------|-------------------------------|----------------------------------------------|
 | Jan 2026       | WebGL-Jan2026                 | WebGL foundation — save system, size, loading |
 | Jan–Feb 2026   | WebGL-Jan2026                 | Ads, UI orientation, Xsolla, font base        |
-| Mar 2026       | Pley_FirebaseSDK-Test-March26 | Pley platform — Firebase, Google Sign-in      |
+| Feb–Mar 2026   | Pley_FirebaseSDK-Test-March26 | Pley platform — 3 weeks R&D, Firebase, Firestore, external token auth |
 | Mar–Apr 2026   | Crazy-April26                 | CrazyGames — SDK, QA, 3 build rounds          |
 | Apr 2026       | Crazy-April26                 | Music fix, DDOL fix, font streaming system    |
 | Apr 2026       | PokiNew-April26               | Poki SDK — full integration, IAP removal, ads |
